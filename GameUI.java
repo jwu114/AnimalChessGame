@@ -1,10 +1,7 @@
-package MainGame;
-
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
-import java.util.ArrayList;
 
 public class GameUI extends JFrame
 {
@@ -36,8 +33,7 @@ public class GameUI extends JFrame
 
     private final Color color = new Color(57,19,0);      // General color of background
 
-    private String P1, P2;
-    public GameUI(String P1, String P2)
+    public GameUI()
     {
         super("Game");
         contents = getContentPane();  
@@ -45,9 +41,7 @@ public class GameUI extends JFrame
         BorderLayout bl = new BorderLayout( );       
         contents.setLayout( bl );
 
-        this.P1 = P1;
-        this.P2 = P2;
-        game = new Game(this, P1, P2);
+        game = new Game(this);
         bh = new ButtonHandler();
 
         contents.add(TopPane(), bl.NORTH);
@@ -105,8 +99,8 @@ public class GameUI extends JFrame
         centerLeft.setBackground(color);
         centerRight.setBackground(color);
 
-        name1 = new JTextField("Blue: " + P1);
-        name2 = new JTextField(P2 + " :Red ");
+        name1 = new JTextField("Blue ");
+        name2 = new JTextField(" Red");
         timer1 = game.paintTimer(1);
         timer2 = game.paintTimer(2);
 
@@ -189,17 +183,13 @@ public class GameUI extends JFrame
                     int choice = JOptionPane.showConfirmDialog(null, "Are you sure you want to exit? (All the record of this field will lose)", "Confirm", JOptionPane.YES_NO_OPTION);
                     if(choice == JOptionPane.YES_OPTION){
                         dispose();
-                        MenuUI menu = new MenuUI(P1);
+                        MenuUI menu = new MenuUI();
                         menu.setDefaultCloseOperation(EXIT_ON_CLOSE);
                     }
                 }
                 else if(ae.getSource() == btnRule){
                     GameRule rule = new GameRule();
                     rule.setDefaultCloseOperation(DISPOSE_ON_CLOSE);
-                }
-                else if(ae.getSource() == btnTool){
-                    ToolUI tool = new ToolUI();
-                    tool.setDefaultCloseOperation(DISPOSE_ON_CLOSE);
                 }
            }catch(Exception e){
                JOptionPane.showMessageDialog(null, "Unknown error G_A_M_E", "Error", JOptionPane.ERROR_MESSAGE);
@@ -229,135 +219,6 @@ public class GameUI extends JFrame
             this.setLocationRelativeTo(null);
             setResizable(false);
             setVisible(true);
-        }
-    }
-
-    private class ToolUI extends JDialog
-    {
-        private String ID;
-
-        private Container contents;
-        private JButton[] buttons;
-        private JTextArea tools;
-        private JPanel panel1, panel2;
-        private ButtonHandler bh;
-
-        private ArrayList<User> users;
-        private User user;
-
-        private boolean found;
-
-        private FileIO io;
-        public ToolUI(){
-            super(getUI(), "Tool", true);
-            contents = getContentPane();
-            contents.setLayout(new BorderLayout());
-
-            ID = game.getAttackerID();
-            findUser();
-            if(found){
-                bh = new ButtonHandler();
-                buttons = new JButton[9];       
-
-                panel1 = Pane();
-                panel2 = createButtons();
-
-                contents.add(panel1, BorderLayout.WEST);
-                contents.add(panel2, BorderLayout.EAST);
-
-                setSize(360,280);
-                this.setLocationRelativeTo(null);
-                setResizable(false);
-                setVisible(true);
-            }
-        }
-
-        public JPanel createButtons(){
-            JPanel panel = new JPanel();   
-            panel.setLayout(new GridLayout(8,1));
-            for(int i = 0; i < user.getTools().length; i++){
-                buttons[i] = new JButton("Use it");
-                buttons[i].addActionListener(bh);               
-                panel.add(buttons[i],0,i);
-            }
-            return panel;
-        }
-
-        public void findUser(){
-            io = new FileIO();
-            users = io.readObjFile("Users.dat");
-            found = false;
-            for(int i = 0; i < users.size(); i++){
-                if(ID.equals(users.get(i).getUserName())){
-                    user = users.get(i);
-                    found = true;
-                }
-            }
-            if(!found){//user isn't existed
-                JOptionPane.showMessageDialog(null, "You're a guest, please buying after login", "Message", JOptionPane.INFORMATION_MESSAGE);            
-            }
-        }
-
-        public JPanel Pane(){
-            JPanel panel = new JPanel();
-            tools = new JTextArea("");
-            String b = "";
-            for(int i = 0; i < user.getTools().length; i++){
-                int num = user.checkToolNum(i);            
-                switch(i){
-                    case 0: b += "Elephant searcher: ";
-                    break;
-                    case 1: b += "Lion searcher: ";
-                    break;
-                    case 2: b += "Tiger searcher: ";
-                    break;
-                    case 3: b += "Leopard searcher: ";
-                    break;
-                    case 4: b += "Wolf searcher: ";
-                    break;
-                    case 5: b += "Dog searcher: ";
-                    break;
-                    case 6: b += "Cat searcher: ";
-                    break;
-                    case 7: b += "Rat searcher: ";
-                    break;
-                }
-                b += "    \t" + num + "\n\n";
-            }
-            tools.setText(b);
-            tools.setBackground(null);
-            tools.setEditable(false);
-            panel.add(tools);
-            return panel;
-        }
-
-        public void use(int index){
-            if(user.checkToolNum(index)-1 < 0){
-                JOptionPane.showMessageDialog(null, "Your tool isn't enough", "Message", JOptionPane.INFORMATION_MESSAGE); 
-            }
-            else{
-                if(game.useTool(index)){
-                    user.setToolNum(index, user.checkToolNum(index) - 1);
-                    JOptionPane.showMessageDialog(null,"You use it successfully!", "Message", JOptionPane.INFORMATION_MESSAGE);
-                    io.writeObjFile("Users.dat", users);
-                }
-                else{
-                    JOptionPane.showMessageDialog(null,"The chess has been killed or turned over", "Message", JOptionPane.INFORMATION_MESSAGE);
-                }
-            } 
-        }
-        private class ButtonHandler implements ActionListener{
-            public void actionPerformed(ActionEvent ae){
-                try{
-                    for(int i = 0; i < user.getTools().length; i++){
-                        if(ae.getSource() == buttons[i]){
-                            use(i);
-                        }
-                    }
-                }catch(Exception e){
-                    JOptionPane.showMessageDialog(null, "Unknown error when checking package", "Error", JOptionPane.ERROR_MESSAGE);
-                }
-            }
         }
     }
 }

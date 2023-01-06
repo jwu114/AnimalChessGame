@@ -1,10 +1,7 @@
-package MainGame;
-
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
-import java.util.ArrayList;
 import java.util.Random;
 
 public class Game extends JPanel
@@ -47,13 +44,11 @@ public class Game extends JPanel
     private boolean magma;      //whether the magma begins to spread
     private boolean wait;       //I don't know how to write real wait() in Thread, so I manually create a wait variable to make thread to wait other when necessary
     private boolean end;
-    private Thread timer, t1, t2, t3;
+    private Thread timer, t3;
 
-    public Game(JFrame frame, String blue, String red)
+    public Game(JFrame frame)
     {              
         this.frame = frame;
-        this.blue = blue;
-        this.red = red;
         initialize();      
         start();
     }
@@ -103,7 +98,6 @@ public class Game extends JPanel
     }
 
     public boolean useTool(int index){
-        boolean success = false;
         if(alive[attacker][index]){
             for(int i = 0; i<4; i++){
                 for(int j = 0; j<4; j++){
@@ -268,26 +262,6 @@ public class Game extends JPanel
 
     }
 
-    public int getChessLevel(int team, int index){//get the level of chesses of each palyer (different levels have different appearances)
-        int level = 0;
-        FileIO io = new FileIO();
-        ArrayList<User> users = io.readObjFile("Users.dat"); 
-        String ID;
-        if(team == 0){
-            ID = blue;
-        }
-        else{
-            ID = red;
-        }
-
-        for(int i = 0; i < users.size(); i++){
-            if((users.get(i).getUserName()).equals(ID)){
-                level = users.get(i).checkPhase(index);
-            }
-        }
-        return level;
-    }//(achieve)
-
     public void changeChessBackground(int team, int x, int y, boolean tool){//change the background color of chess
         if(!tool){
             if(team == 0){
@@ -311,8 +285,7 @@ public class Game extends JPanel
         int team = teams[x][y];
         int index = chesses[x][y];
         if(team != -1){
-            int level = getChessLevel(team, index);
-            btnChesses[x][y].setIcon(new ImageIcon(getClass().getResource("Picture/Chess/" + team + "/" + level + "/" + index + ".png")));
+            btnChesses[x][y].setIcon(new ImageIcon(getClass().getResource("Picture/Chess/" + team + "/" + index + ".png")));
         }
         else if(index == 8){
             btnChesses[x][y].setIcon(null);
@@ -385,7 +358,7 @@ public class Game extends JPanel
         for(int i = 0; i<2; i++){
             for(int j = 0; j<8; j++){
                 if(!alive[i][j]){
-                    states[i][j].setIcon(new ImageIcon(getClass().getResource("Picture/State/Team-1/" + getChessLevel(i, j) + "/" + j + ".png")));
+                    states[i][j].setIcon(new ImageIcon(getClass().getResource("Picture/State/Team-1/" + j + ".png")));
                 }
             }
         }
@@ -425,7 +398,7 @@ public class Game extends JPanel
     }
 
     public void stopTimer(){
-        timer.stop();
+        timer.interrupt();
         if(attacker == 0){
             time1.setText("");
         }
@@ -434,7 +407,7 @@ public class Game extends JPanel
         }
     }
 
-    public void disable(){//disable all chesses
+    public void disableChess(){//disable all chesses
         for(int i = 0; i < btnChesses.length; i++){
             for(int j = 0; j < btnChesses[0].length; j++){
                 clicked[i][j] = true;
@@ -443,79 +416,19 @@ public class Game extends JPanel
         }
     }
 
-    public void updateUser(String winner, String loser){
-        boolean flag1 = false;  //only if the name of winner has been registered (not include guest or testUser when coding or debuging), the Info will update
-        boolean flag2 = false;  //same for loser
-        int index1 = 0;
-        int index2 = 0;
-        FileIO io = new FileIO();
-        ArrayList<User> users = io.readObjFile("Users.dat"); 
-        for(int i = 0; i < users.size(); i++){
-            if(users.get(i).getUserName().equals(winner)){
-                flag1 = true;
-                index1 = i;
-            }
-            if(users.get(i).getUserName().equals(loser)){
-                flag2 = true;
-                index2 = i;
-            }
-        }
-
-        if(flag1){
-            User userW = users.get(index1);
-            //game data
-            userW.setGameTimes(userW.getGameTimes() + 1);
-            userW.setWinnerTimes(userW.getWinnerTimes() + 1);
-            userW.calWinningRate();
-            //chess data 
-            if(countAliveChesses(1) == 0){//infer the reason of ending game (only normal end, one player hasn't alive chess is suitable)
-                for(int i = 0; i<alive[0].length; i++){
-                    if(alive[1][i]){
-                        userW.setAliveTimes(i, userW.checkAliveTimes(i) + 1);
-                    }
-                }
-            }
-            else if(countAliveChesses(2) == 0){
-                for(int i = 1; i<alive[1].length; i++){
-                    if(alive[0][i]){
-                        userW.setAliveTimes(i, userW.checkAliveTimes(i) + 1);
-                    }
-                }
-            }
-            //money data
-            userW.setCoins(userW.getCoins() + 10);
-
-        }
-        else if(flag2){
-            User userL = users.get(index2);
-            //game data
-            userL.setGameTimes(userL.getGameTimes() + 1);
-            userL.calWinningRate();
-            //chess data (nothing)
-            //money data (nothing) (loser has nothing -_-)
-        }
-        else{
-            return;
-        }
-        io.writeObjFile("Users.dat",users);
-    }
-
     public void endGame(int team){
         end = true;
-        disable();
-        String winner, loser;
+        disableChess();
+        String winner;
         if(team == 0){
             winner = blue;
-            loser = red;
         }
         else{
             winner = red;
-            loser = blue;
         }
-        JOptionPane.showMessageDialog(null, "winner is " + winner + "\n coins + 10", "Game Result", JOptionPane.INFORMATION_MESSAGE);  
-        updateUser(winner, loser);        
+        JOptionPane.showMessageDialog(null, "winner is " + winner + "\n coins + 10", "Game Result", JOptionPane.INFORMATION_MESSAGE);      
         frame.dispose();
-        MenuUI menu = new MenuUI(blue);
+        MenuUI menu = new MenuUI();
         menu.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
     }
 
@@ -550,7 +463,7 @@ public class Game extends JPanel
     public JPanel paintStates(int team){//paint states of P1 and P2 (called by GameUI)         
         JPanel panel = new JPanel();
         for(int i=0; i < states[0].length; i++){
-            states[team][i] = new JLabel(new ImageIcon(getClass().getResource("Picture/State/Team" + team + "/" + getChessLevel(team, i) + "/" + i + ".png")));
+            states[team][i] = new JLabel(new ImageIcon(getClass().getResource("Picture/State/Team" + team + "/" + i + ".png")));
             states[team][i].setPreferredSize(new Dimension(45,45));   
             panel.add(states[team][i]);
         }
