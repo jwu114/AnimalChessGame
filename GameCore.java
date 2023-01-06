@@ -607,7 +607,7 @@ public class GameCore extends JPanel
                 }                                              
             }catch(InterruptedException e){}
         }
-    }//(need to add more switches)
+    }
 
     private class AnimateMove implements Runnable{
         private int x1, x2, y1, y2;
