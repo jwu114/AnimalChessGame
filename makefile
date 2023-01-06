@@ -7,12 +7,11 @@ JCFLAGS = -d $(OUT_DIR)
 
 CLASSES = \
 		MenuUI.java \
-		Game.java \
-		GameUI.java \
-		Game.java \
+		GameFrame.java \
+		GameCore.java \
 		MainClass.java
 
-default: build
+default: build run clean
 		
 build: 
 	$(JC) $(JCFLAGS) $(CLASSES)

@@ -3,49 +3,34 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
 
-public class GameUI extends JFrame
+public class GameFrame extends JFrame
 {
     private Container contents;  
 
     private ButtonHandler bh;
-    private Game game;
+    private GameCore game;
 
     private JTextField timer1, timer2, name1, name2;   
     private JLabel reminder;
 
-    //This JLabels can show whether the chess is alive or dead.   
-    private final JLabel[][] states = new JLabel[2][8];    //[0][] means chess of blue(P1) player    [1][] means chess of red(P2) player
-    /*
-     * index 0 -> elephant 
-     * index 1 -> lion
-     * index 2 -> tiger
-     * index 3 -> leopard
-     * index 4 -> wolf
-     * index 5 -> dog
-     * index 6 -> cat
-     * index 7 -> rat
-     */
-
     private JButton btnBack;        // directly end the game and return to menu (no one win)
     private JButton btnRule;        // rule for player who doesn't know
-    private JButton btnTool;        // players can use tool in their own turn
-    private JButton btnFail;         // end the game (the person who clicks will lose the game)
 
     private final Color color = new Color(57,19,0);      // General color of background
 
-    public GameUI()
+    public GameFrame()
     {
-        super("Game");
+        super("Animal Chess");
         contents = getContentPane();  
 
         BorderLayout bl = new BorderLayout( );       
         contents.setLayout( bl );
 
-        game = new Game(this);
+        game = new GameCore(this);
         bh = new ButtonHandler();
 
-        contents.add(TopPane(), bl.NORTH);
-        contents.add(BottomPane(), bl.SOUTH);
+        contents.add(TopPane(), BorderLayout.NORTH);
+        contents.add(BottomPane(), BorderLayout.SOUTH);
         contents.add(game.paintButtons(), SwingConstants.CENTER);      
 
         setSize(440, 620);
@@ -53,7 +38,8 @@ public class GameUI extends JFrame
         contents.setBackground(color);
         setLocationRelativeTo(null);
         setResizable(false);
-        setVisible(true);                     
+        setVisible(true);   
+        this.setDefaultCloseOperation(EXIT_ON_CLOSE);                  
     }
 
     public JPanel TopPane(){
@@ -76,13 +62,13 @@ public class GameUI extends JFrame
         topLeft.setBackground(color);
 
         btnBack = new JButton("");
-        btnBack.setIcon(new ImageIcon(getClass().getResource("Picture/Back.png")));
+        btnBack.setIcon(new ImageIcon("./Picture/Back.png"));
         btnBack.setPreferredSize(new Dimension(25,25));
         btnBack.addActionListener(bh);
         topLeft.add(btnBack);
 
         btnRule = new JButton("");
-        btnRule.setIcon(new ImageIcon(getClass().getResource("Picture/Rule.png")));
+        btnRule.setIcon(new ImageIcon("./Picture/Rule.png"));
         btnRule.setPreferredSize(new Dimension(25,25));
         btnRule.addActionListener(bh);
         topLeft.add(btnRule);
@@ -133,7 +119,6 @@ public class GameUI extends JFrame
         //Bottom: 
         bottom = game.paintStates(0);        
 
-        //Final(total):
         panel.add(top, BorderLayout.NORTH);
         panel.add(center, BorderLayout.CENTER);
         panel.add(bottom, BorderLayout.SOUTH);        
@@ -146,7 +131,7 @@ public class GameUI extends JFrame
         panel.setBackground(color);        
 
         JPanel top = new JPanel();  //for state of Red(P2)
-        JPanel bottom = new JPanel();   //for tool button and "give up" button
+        JPanel bottom = new JPanel(); 
 
         bottom.setLayout(new BorderLayout() );
 
@@ -157,13 +142,7 @@ public class GameUI extends JFrame
         top = game.paintStates(1);
 
         //Bottom:        
-        btnTool = new JButton("");
-        btnTool.setIcon(new ImageIcon(getClass().getResource("Picture/ToolButton.png")));
-        btnTool.setPreferredSize(new Dimension(60,55));
-        btnTool.addActionListener(bh);
-        bottom.add(btnTool, BorderLayout.WEST);
-
-        reminder = new JLabel(new ImageIcon(getClass().getResource("Picture/Reminder.png")));
+        reminder = new JLabel(new ImageIcon("./Picture/Reminder.png"));
         bottom.add(reminder);
 
         //Final(total):
@@ -172,7 +151,7 @@ public class GameUI extends JFrame
         return panel;
     }
 
-    public JFrame getUI(){
+    public JFrame getFrame(){
         return this;
     }
 
@@ -183,16 +162,14 @@ public class GameUI extends JFrame
                     int choice = JOptionPane.showConfirmDialog(null, "Are you sure you want to exit? (All the record of this field will lose)", "Confirm", JOptionPane.YES_NO_OPTION);
                     if(choice == JOptionPane.YES_OPTION){
                         dispose();
-                        MenuUI menu = new MenuUI();
-                        menu.setDefaultCloseOperation(EXIT_ON_CLOSE);
+                        new MenuUI();
                     }
                 }
                 else if(ae.getSource() == btnRule){
-                    GameRule rule = new GameRule();
-                    rule.setDefaultCloseOperation(DISPOSE_ON_CLOSE);
+                    new GameRule();
                 }
            }catch(Exception e){
-               JOptionPane.showMessageDialog(null, "Unknown error G_A_M_E", "Error", JOptionPane.ERROR_MESSAGE);
+               JOptionPane.showMessageDialog(null, "Unknown error GAME", "Error", JOptionPane.ERROR_MESSAGE);
            }
         }
     } 
@@ -202,7 +179,7 @@ public class GameUI extends JFrame
         private JTextArea rule;
         private String text;
         public GameRule(){
-            super(getUI(), "Rule", true);
+            super(getFrame(), "Rule", true);
             contents = getContentPane();
             contents.setLayout(new FlowLayout());
 
@@ -219,6 +196,7 @@ public class GameUI extends JFrame
             this.setLocationRelativeTo(null);
             setResizable(false);
             setVisible(true);
+            this.setDefaultCloseOperation(DISPOSE_ON_CLOSE);
         }
     }
 }

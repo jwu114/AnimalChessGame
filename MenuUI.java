@@ -65,6 +65,7 @@ public class MenuUI extends JFrame {
 		this.setLocationRelativeTo(null);
 		setResizable(false);
 		setVisible(true);
+		this.setDefaultCloseOperation(EXIT_ON_CLOSE);
 	}
 
 	public JFrame getMenu() {
@@ -74,14 +75,12 @@ public class MenuUI extends JFrame {
 	private class ButtonHandler implements ActionListener {
 		public void actionPerformed(ActionEvent ae) {
 			if (ae.getSource() == btnRule) {
-				Rule rule = new Rule();
-				rule.setDefaultCloseOperation(DISPOSE_ON_CLOSE);
+				new Rule();
 			} else if (ae.getSource() == btnQuit) {
-				dispose();
+				System.exit(0);
 			} else if (ae.getSource() == btnStart) {
-				GameUI game = new GameUI();
-				game.setDefaultCloseOperation(EXIT_ON_CLOSE);
 				dispose();
+				new GameFrame();
 			}
 		}
 	}
@@ -96,7 +95,7 @@ public class MenuUI extends JFrame {
 			contents = getContentPane();
 			contents.setLayout(new FlowLayout());
 			textA = new JTextArea("");
-			
+
 			// rule description
 			text = "This is an animal battle chess game. In the game, there is a 4 x 4 chess board with 16 covered checkers.\n"
 					+ "Players need to uncover checkers and eat all checkers of the opponent to win the game.\n"
@@ -118,6 +117,7 @@ public class MenuUI extends JFrame {
 			this.setLocationRelativeTo(null);
 			setResizable(false);
 			setVisible(true);
+			this.setDefaultCloseOperation(DISPOSE_ON_CLOSE);
 		}
 
 	}

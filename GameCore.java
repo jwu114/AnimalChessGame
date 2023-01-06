@@ -4,7 +4,7 @@ import java.awt.*;
 import java.awt.event.*;
 import java.util.Random;
 
-public class Game extends JPanel
+public class GameCore extends JPanel
 {
     private JButton[][] btnChesses;    // 4x4 = 16 btnChesses
     private JLabel[][] states;
@@ -34,7 +34,6 @@ public class Game extends JPanel
 
     private boolean[][] alive;  //whether the chess is alive
     private boolean[][] clicked;//whether the card in each coordinate has been turned over
-    private String blue, red;   //ID of blue and red player
     private int pressX, pressY; //The coordinate of chess which has been pressed  
     private JFrame frame;       //GameUI's frame (JDialog uses this in super())
 
@@ -42,25 +41,21 @@ public class Game extends JPanel
     private int turn;
     private int peaceTurns;     //store the number of turns that no chess has been killed
     private boolean magma;      //whether the magma begins to spread
-    private boolean wait;       //I don't know how to write real wait() in Thread, so I manually create a wait variable to make thread to wait other when necessary
+    private boolean wait;
     private boolean end;
     private Thread timer, t3;
 
-    public Game(JFrame frame)
+    public GameCore(JFrame frame)
     {              
         this.frame = frame;
         initialize();      
         start();
     }
 
-    public void initialize(){//initialize different field variables
-        attacker = drawFirst();            //randomly choose first-hand player
-        if(attacker == 0){
-            defender = 1;
-        }
-        else{
-            defender = 0;
-        }
+    public void initialize(){ //initialize field variables
+        // Blue is on the offensive
+        attacker = 0;
+        defender = 1;
         turn = 0;
         peaceTurns = 0;
         magma = false;
@@ -86,44 +81,7 @@ public class Game extends JPanel
                 alive[i][j] = true;
             }
         }
-        createChesses();                   //generate the initial position of chesses
-    }
-
-    public String getAttackerID(){
-        if(attacker == 0){
-            return blue;
-        }else{
-            return red;
-        }        
-    }
-
-    public boolean useTool(int index){
-        if(alive[attacker][index]){
-            for(int i = 0; i<4; i++){
-                for(int j = 0; j<4; j++){
-                    if(teams[i][j] == attacker){
-                        if(chesses[i][j] == index){
-                            if(!clicked[i][j]){
-                                changeChessBackground(attacker, i, j, true);
-                            }
-                            else{
-                                return false;
-                            }
-                        }
-                    }
-                }        
-            }       
-            return true;
-        }
-        else{
-            return false;
-        }
-    }
-
-    public int drawFirst(){//randomly choose the fist-hand player
-        Random random = new Random();
-        int first = random.nextInt(2);
-        return first;
+        createChesses(); /*generate the initial position of chesses*/
     }
 
     public void createChesses(){//Generate the initial position of each chess       
@@ -145,13 +103,6 @@ public class Game extends JPanel
     }//(achieve)
 
     public void paintMagma(){
-        /* -------------- 
-         * |  --------  | 
-         * | | |----  | |
-         * | | |      | |
-         * | | ------ | |
-         * | |-----------            
-         */
         int x;
         int y;
         int loop = 0;
@@ -198,10 +149,10 @@ public class Game extends JPanel
         }        
     }
 
-    public void start(){//start the new turn    
+    public void start(){ /*start the new turn*/   
         turn++;
 
-        if(magma && turn%4 == 2){//magma spreads a button per 4 turns
+        if(magma && turn%4 == 2){ /*magma spreads a button per 4 turns*/
             paintMagma();
             updateAlive();
             if(countAliveChesses(1) == 0 && !end){
@@ -215,10 +166,9 @@ public class Game extends JPanel
         timer = new Thread(new Timer());
         t.start();              
         timer.start();
-    }//(achieve)
+    }
 
     public void end(){//end the turn
-
         wait = false;
         peaceTurns++;
 
@@ -259,7 +209,6 @@ public class Game extends JPanel
             defender = 1;
         }
         start();
-
     }
 
     public void changeChessBackground(int team, int x, int y, boolean tool){//change the background color of chess
@@ -279,22 +228,22 @@ public class Game extends JPanel
         }
         btnChesses[x][y].setContentAreaFilled(false);
         btnChesses[x][y].setOpaque(true); 
-    }//(achieve)
+    }
 
     public void paintChess(int x, int y){    //paint chess when clicking card which hasn't been turned over
         int team = teams[x][y];
         int index = chesses[x][y];
         if(team != -1){
-            btnChesses[x][y].setIcon(new ImageIcon(getClass().getResource("Picture/Chess/" + team + "/" + index + ".png")));
+            btnChesses[x][y].setIcon(new ImageIcon("./Picture/Chess/" + team + "/" + index + ".png"));
         }
         else if(index == 8){
             btnChesses[x][y].setIcon(null);
         }
         else if(index == -1){
-            btnChesses[x][y].setIcon(new ImageIcon(getClass().getResource("Picture/Chess/Magma.png")));
+            btnChesses[x][y].setIcon(new ImageIcon("./Picture/Chess/Magma.png"));
         }
         clicked[x][y] = true;
-    }//(achieve)
+    }
 
     public int compareChesses(int index1, int index2){
         if(index1 == 0 && index2 == 7){//two chesses are elephant and rat separately (special situation)
@@ -358,7 +307,7 @@ public class Game extends JPanel
         for(int i = 0; i<2; i++){
             for(int j = 0; j<8; j++){
                 if(!alive[i][j]){
-                    states[i][j].setIcon(new ImageIcon(getClass().getResource("Picture/State/Team-1/" + j + ".png")));
+                    states[i][j].setIcon(new ImageIcon("./Picture/State/Team-1/" + j + ".png"));
                 }
             }
         }
@@ -421,15 +370,14 @@ public class Game extends JPanel
         disableChess();
         String winner;
         if(team == 0){
-            winner = blue;
+            winner = "blue";
         }
         else{
-            winner = red;
+            winner = "red";
         }
-        JOptionPane.showMessageDialog(null, "winner is " + winner + "\n coins + 10", "Game Result", JOptionPane.INFORMATION_MESSAGE);      
+        JOptionPane.showMessageDialog(null, "winner is " + winner, "Game Result", JOptionPane.INFORMATION_MESSAGE);      
         frame.dispose();
-        MenuUI menu = new MenuUI();
-        menu.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        new MenuUI();
     }
 
     public JPanel paintButtons(){//paint 4x4 grid of buttons (called by GameUI)
@@ -443,13 +391,13 @@ public class Game extends JPanel
         for(int i = 0; i < btnChesses.length; i++){
             for(int j = 0; j < btnChesses[0].length; j++){
                 btnChesses[i][j] = new JButton("");
-                btnChesses[i][j].setIcon(new ImageIcon(getClass().getResource("Picture/Chess.png")));
+                btnChesses[i][j].setIcon(new ImageIcon("./Picture/Chess.png"));
                 btnChesses[i][j].addActionListener(bh);
                 panel.add(btnChesses[i][j], i, j);
             }
         }
         return panel;
-    }//(achieve)
+    }
 
     public JTextField paintTimer(int index){//paint timer of P1 and P2 (called by GameUI)
         if(index == 1){            
@@ -458,12 +406,12 @@ public class Game extends JPanel
         else{           
             return time2;
         }        
-    }//(achieve)
+    }
 
     public JPanel paintStates(int team){//paint states of P1 and P2 (called by GameUI)         
         JPanel panel = new JPanel();
         for(int i=0; i < states[0].length; i++){
-            states[team][i] = new JLabel(new ImageIcon(getClass().getResource("Picture/State/Team" + team + "/" + i + ".png")));
+            states[team][i] = new JLabel(new ImageIcon("./Picture/State/Team" + team + "/" + i + ".png"));
             states[team][i].setPreferredSize(new Dimension(45,45));   
             panel.add(states[team][i]);
         }
@@ -566,7 +514,7 @@ public class Game extends JPanel
             setResizable(false);
             setVisible(true);      
         }
-    }//(achieve)
+    }
 
     private class NoBattleReminder extends JDialog{
         private Container contents;
@@ -657,9 +605,7 @@ public class Game extends JPanel
                     default:
                     break;
                 }                                              
-            }catch(InterruptedException ie){
-                ie.printStackTrace();
-            }
+            }catch(InterruptedException e){}
         }
     }//(need to add more switches)
 
@@ -676,9 +622,7 @@ public class Game extends JPanel
             try{                
                 Thread.sleep(500);
                 battle(x1, y1, x2, y2); //compare the intensity of two chesses (selected chess and the chess which is just clicked)
-            }catch(InterruptedException ie){
-                ie.printStackTrace();
-            }
+            }catch(InterruptedException e){}
         }
     }
 
@@ -708,9 +652,7 @@ public class Game extends JPanel
                 if(frame.isVisible()){//EXIT_ON_CLOSE can't stop this thread, and the timer always continuous works and send endGame result
                     endGame(defender);                    
                 }
-            }catch(InterruptedException ie){
-                ie.printStackTrace();
-            }
+            }catch(InterruptedException e){}
         }
     }
 }
